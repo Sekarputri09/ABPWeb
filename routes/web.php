@@ -21,41 +21,42 @@ use App\Http\Controllers\BMRController;
 */
 
 Route::middleware(['auth'])->group(function () {
-});
     Route::get('/Home', function () {
         return view('Home');
     });
-    Route::get('/resep/create-recipe', [RecipeController::class, 'createRecipe']);
-    Route::get('/resep/get-recipe', [RecipeController::class, 'getRecipe'])->name('get-recipe');
-    Route::get('/resep/update-recipe/{id}', [RecipeController::class, 'updateRecipe']);
-    Route::get('/resep/tambah-like/{id}', [RecipeController::class, 'tambahLike']);
-    Route::get('/resep/delete-recipe/{id}', [RecipeController::class, 'deleteRecipe']);
-    Route::get('/resep/getByLike-recipe', [RecipeController::class, 'getRecipeByLike']);
-    Route::get('/resep/getByFilter-recipe', [RecipeController::class, 'getRecipeByFilter']);
 
-    Route::get('/user/create-user', [UserController::class, 'createUser']);
-    Route::get('/user/get-user', [UserController::class, 'getUser'])->name('get-user');
-    Route::get('/user/update-user/', [UserController::class, 'updateUser']);
-    Route::get('/user/delete-user/', [UserController::class, 'deleteUser']);
+    Route::prefix('resep')->group(function () {
+        Route::get('create-recipe', [RecipeController::class, 'createRecipe']);
+        Route::get('get-recipe', [RecipeController::class, 'getRecipe'])->name('get-recipe');
+        Route::get('update-recipe/{id}', [RecipeController::class, 'updateRecipe']);
+        Route::get('tambah-like/{id}', [RecipeController::class, 'tambahLike']);
+        Route::get('delete-recipe/{id}', [RecipeController::class, 'deleteRecipe']);
+        Route::get('getByLike-recipe', [RecipeController::class, 'getRecipeByLike']);
+        Route::get('getByFilter-recipe', [RecipeController::class, 'getRecipeByFilter']);
+    });
 
-    Route::get('/myresep/get-recipe', [MyResepController::class, 'getRecipe'])->name('get-myresep');
-    Route::get('/myresep/create-recipe', [MyResepController::class, 'createMyResep']);
-    Route::get('/myresep/delete-recipe/{id}', [MyResepController::class, 'deleteRecipe']);
-    Route::get('/myresep/getByUserAndMyResep', [MyResepController::class, 'getRecipeByUserAndMyResep']);
-    Route::get('/myresep/addBookmark/{id}', [MyResepController::class, 'addBookmark']);
+    Route::prefix('user')->group(function () {
+        Route::get('create-user', [UserController::class, 'createUser']);
+        Route::get('get-user', [UserController::class, 'getUser'])->name('get-user');
+        Route::get('update-user', [UserController::class, 'updateUser']);
+        Route::get('delete-user/{id}', [UserController::class, 'deleteUser']);
+    });
 
-    Route::get('/BMR', [UserController::class, 'BMR']);
-    
+    Route::prefix('myresep')->group(function () {
+        Route::get('get-recipe', [MyResepController::class, 'getRecipe'])->name('get-myresep');
+        Route::get('create-recipe', [MyResepController::class, 'createMyResep']);
+        Route::get('delete-recipe/{id}', [MyResepController::class, 'deleteRecipe']);
+        Route::get('getByUserAndMyResep', [MyResepController::class, 'getRecipeByUserAndMyResep']);
+        Route::get('addBookmark/{id}', [MyResepController::class, 'addBookmark']);
+    });
+
+    Route::get('/BMR', [BMRController::class, 'calculateBMR']);
 
     Route::post('/login', function (Request $request) {
         $credentials = $request->only('email', 'password');
-
-        // Cek apakah email dan password cocok dengan data di database
         if (Auth::attempt($credentials)) {
-            // Autentikasi berhasil, arahkan ke halaman produk
             return redirect('/Home');
         } else {
-            // Autentikasi gagal, kembali ke halaman login dengan pesan error
             return redirect('/login')->with('error', 'Email or password incorrect');
         }
     })->name('login.submit');
@@ -92,7 +93,7 @@ Route::middleware(['auth'])->group(function () {
         Auth::logout();
         return redirect('login');
     });
-
+});
 
 Route::get('/', function () {
     return view('LandingPage');
@@ -103,18 +104,19 @@ Route::get('/SignUp', function () {
 });
 
 Route::get('/Login', function () {
-    return view('Login');
-});
-
-Route::get('/login', function () {
-    // Check if user is already authenticated
     if (Auth::check()) {
         return redirect('/Home');
     }
     return view('Login');
 })->name('login');
 
-
-
-
 Route::post('/signup', [AuthController::class, 'register'])->name('register.submit');
+
+Route::post('/login', function (Request $request) {
+    $credentials = $request->only('email', 'password');
+    if (Auth::attempt($credentials)) {
+        return redirect('/Home');
+    } else {
+        return redirect('/login')->with('error', 'Email or password incorrect');
+    }
+})->name('login.submit');
